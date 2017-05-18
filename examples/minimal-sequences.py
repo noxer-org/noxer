@@ -1,11 +1,9 @@
-# Noxer
-Streamlined supervised learning for easy training and deployment of ML models.
+"""Trains a recurrent neural network classifier on the random data, saves
+the data preprocessing and model pipeline to the file, loads the pipeline
+and makes estimation with with loaded pipeline.
+A minimal example for explanatory purposes only.
+"""
 
-## Minimal example
-
-Sequence classification example is shown below. Sequence padding is used as a preprocessing step, and RNN from Keras as an estimator:
-
-```python
 import noxer.sequences as nx
 
 from sklearn.model_selection import train_test_split
@@ -40,6 +38,3 @@ with open("model.bin", "r") as f:
     model = pc.load(f)
 
 print model.predict(X_test)
-```
-
-Other classes from sklearn such as `GridSearchCV` can be used with pipelines for hyperparameter search.
