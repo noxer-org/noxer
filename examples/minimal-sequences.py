@@ -21,7 +21,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.75)
 
 # create preprocessing and estimation pipeline
 model = make_pipeline(
-    nx.PaddedSubsequence(length=2), # Select last 2 time sequence elements in all input sequences
+    nx.PadSubsequence(length=2), # Select last 2 time sequence elements in all input sequences
     nx.RNNClassifier(n_neurons=32) # Apply recurrent neural network
 )
 

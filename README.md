@@ -1,9 +1,24 @@
 # Noxer
+
 Streamlined supervised learning for easy training and deployment of ML models.
+
+## Installation
+
+Install using python package manager in terminal
+
+* For users: `[sudo] pip install https://github.com/iaroslav-ai/noxer/archive/master.zip`
+* For contributors:
+```python
+git clone https://github.com/iaroslav-ai/noxer.git
+cd noxer
+[sudo] pip install -e .
+```
 
 ## Minimal example
 
-Sequence classification example is shown below. Sequence padding is used as a preprocessing step, and RNN from Keras as an estimator:
+Sequence classification example is shown below.
+Sequence padding is used as a preprocessing step,
+and Recurrent Neural Network as an estimator:
 
 ```python
 import noxer.sequences as nx

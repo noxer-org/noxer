@@ -142,8 +142,7 @@ def make_subsequences(x, y, step=1):
 
     return X, Y
 
-
-class PaddedSubsequence(BaseEstimator, TransformerMixin):
+class PadSubsequence(BaseEstimator, TransformerMixin):
     """
     Takes subsequences of fixed length from input list of sequences.
     If sequence is not long enough, it is left padded with zeros.
@@ -155,6 +154,10 @@ class PaddedSubsequence(BaseEstimator, TransformerMixin):
     """
     def __init__(self, length=10):
         self.length = length
+
+    def _check_input(self, X):
+        if len(X.shape) < 2:
+            raise ValueError("The input sequence to the ")
 
     def fit(self,X,y=None):
         # remeber the num. of features
@@ -196,7 +199,7 @@ class FlattenShape(BaseEstimator, TransformerMixin):
 
 def rnn_pipe():
     pipe = make_pipeline(
-        PaddedSubsequence(),
+        PadSubsequence(),
         RNNClassifier()
     )
     grid = [
@@ -210,7 +213,7 @@ def rnn_pipe():
 
 def svm_pipe():
     pipe = make_pipeline(
-        PaddedSubsequence(),
+        PadSubsequence(),
         FlattenShape(),
         StandardScaler(),
         LinearSVC(),
