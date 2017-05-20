@@ -4,10 +4,10 @@ Streamlined supervised learning for easy training and deployment of ML models.
 
 ## Installation
 
-Install using python package manager in terminal
+Install using pip in terminal:
 
-* For users: `[sudo] pip install https://github.com/iaroslav-ai/noxer/archive/master.zip`
-* For contributors:
+* If you only want to use code: `[sudo] pip install https://github.com/iaroslav-ai/noxer/archive/master.zip`
+* If you want to edit the code:
 ```python
 git clone https://github.com/iaroslav-ai/noxer.git
 cd noxer
