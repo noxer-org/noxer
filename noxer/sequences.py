@@ -184,7 +184,7 @@ class Subsequensor(BaseEstimator):
         """
         test_time = Y is None
         if test_time:
-            Y = [None] * len(X)
+            Y = [[None]*len(x) for x in X]
         XY = [make_subsequences(x, y, self.step) for x, y in zip(X, Y)]
         X = [z[0] for z in XY]
         if test_time:
@@ -237,7 +237,7 @@ class SequenceEstimator(BaseEstimator):
         return self
 
     def predict(self, X):
-        X = Subsequensor(step=self.step).transform(X)
+        X = Subsequensor(step=1).transform(X)
         R = [self.estimator.predict(x) for x in X]
         return R
 
