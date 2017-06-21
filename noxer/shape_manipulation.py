@@ -39,37 +39,59 @@ def vector_to_struct(vect, blueprint):
 
 
 activations = {
-    "gauss": lambda x: np.exp(-(x)),
-    "inv": lambda x: 1.0 / (1.0 + x),
-    "linear": lambda x: x,
-    "logistic": lambda x: np.log(1 + np.exp(x)),
-    "sigmoid": lambda x: 1/(1 + np.exp(-x)),
-    "quadratic": lambda x: x ** 2,
-    "LeReLU": lambda x: np.maximum(x, x*0.05),
+    "gauss": lambda x, b: b.exp(-(x)),
+    "inv": lambda x, b: 1.0 / (1.0 + x),
+    "linear": lambda x, b: x,
+    "logistic": lambda x, b: b.log(1 + b.exp(x)),
+    "sigmoid": lambda x, b: 1/(1 + b.exp(-x)),
+    "quadratic": lambda x, b: x ** 2,
+    "LeReLU": lambda x, b: b.maximum(x, x*0.05),
 }
 
 
-def ffnn_predict(X,W):
+def ffnn_predict(X,W, nn_name="nn", backend=np):
     """makes predictions with nn with """
     H = X
-    idx = 0
 
-    while ("w_%s"%idx) in W:
-        w = W["w_%s"%idx]
-        b = W["b_%s"%idx]
-        a = W["a_%s"%idx]
-        H = np.dot(H,w) + b
-        H = activations[a](H)
+    idx = 0
+    name = "w" # name for which to check if it is still in dict
+
+    while (nn_name + "_w_%s"%idx) in W:
+        w = W[nn_name + "_w_%s"%idx]
+        b = W[nn_name + "_b_%s"%idx]
+        a = W[nn_name + "_a_%s"%idx]
+        H = backend.dot(H,w) + b
+        H = activations[a](H, backend)
         idx += 1
 
     return H
 
 
-def make_ffnn_weights(X, Y, n_neurons, n_layers, act, out_act="linear"):
+def rnd_gen(*args):
+    return np.random.randn(*args)
+
+
+def select_nn(W, nn_name):
+    R = {k:v for k, v in W.items() if k.startswith(nn_name)}
+    return R
+
+
+
+def make_ffnn_weights(X, Y, n_neurons, n_layers, act, out_act="linear", nn_name="nn", W={}, rnd = rnd_gen):
+    """
+
+    :param X: training inputs
+    :param Y: training outputs
+    :param n_neurons: number of neurons in feed forward nn
+    :param n_layers: number of layers
+    :param act: activation type
+    :param out_act: activation applied to the output layer
+    :param nn_name: name of the neural network
+    :param W: dictionary where to write the results. New one is used if not provided.
+    :return:
+    """
     Xsz, Ysz = X.shape[-1], Y.shape[-1]
     Asz, Bsz = Xsz, n_neurons
-
-    W = {}
 
     for idx in range(n_layers+1):
 
@@ -77,11 +99,12 @@ def make_ffnn_weights(X, Y, n_neurons, n_layers, act, out_act="linear"):
             act = out_act
             Bsz = Ysz
 
-        w = np.random.randn(Asz, Bsz)
-        b = np.random.randn(Bsz)
-        W["w_%s"%idx] = w
-        W["b_%s"%idx] = b
-        W["a_%s"%idx] = act
+        w = rnd(Asz, Bsz)
+        b = rnd(Bsz)
+
+        for name, par in (('w',w), ('b', b), ('a', act)):
+            W[nn_name + "_" + name + "_%s"%idx] = par
+
         idx += 1
         Asz = Bsz
 
