@@ -14,7 +14,7 @@ from sklearn.svm import LinearSVC
 # A set of procedures for preprocessing of sequences
 
 
-def make_subsequences(x, y, step=1):
+def make_subsequences(x, y, step=1, max_len=2 ** 31):
     """
     Creates views to all subsequences of the sequence x. For example if
     x = [1,2,3,4]
@@ -37,6 +37,12 @@ def make_subsequences(x, y, step=1):
     y : numpy array of shape [n_samples]
         Target values. Can be string, float, int etc.
 
+    step : int
+        Step with which to subsample the sequence.
+
+    max_len : int, default 2 ** 31
+        Step with which to subsample the sequence.
+
     Returns
     -------
     a, b : a is all subsequences of x taken with some step, and b is labels assigned to these sequences.
@@ -48,7 +54,9 @@ def make_subsequences(x, y, step=1):
     Y = []
 
     for i in r:
-        X.append(x[:i+1])
+        start = max(0, i - max_len)
+        stop = i+1
+        X.append(x[start:stop])
         Y.append(y[i])
 
     return X, Y
@@ -142,10 +150,14 @@ class Subsequensor(BaseEstimator):
     ----------
     step: int, step with which the subsequences are taken.
 
+    max_subsequence: int or None, maximum subsequence size that is used
+        in order to predict a certain output value.
+
     """
 
-    def __init__(self, step):
+    def __init__(self, step, max_subsequence=None):
         self.step = step
+        self.max_subsequence = max_subsequence
 
     def fit(self, X, Y):
         """Fit the transformer according to the given training data.
@@ -185,7 +197,13 @@ class Subsequensor(BaseEstimator):
         test_time = Y is None
         if test_time:
             Y = [[None]*len(x) for x in X]
-        XY = [make_subsequences(x, y, self.step) for x, y in zip(X, Y)]
+
+        if self.max_subsequence is None:
+            args = (self.step, )
+        else:
+            args = (self.step, self.max_subsequence)
+
+        XY = [make_subsequences(*((x, y, ) + args)) for x, y in zip(X, Y)]
         X = [z[0] for z in XY]
         if test_time:
             return X
@@ -216,9 +234,10 @@ class SequenceEstimator(BaseEstimator):
     step: int, step with which the subsequences are taken for training of internal sestimator.
 
     """
-    def __init__(self, estimator, step=1):
+    def __init__(self, estimator, step=1, max_subsequence=None):
         self.estimator = estimator
         self.step = step
+        self.max_subsequence = max_subsequence
 
         self.subsequencer = None # class instance that is responsible for getting views into the sequence
 
@@ -231,7 +250,7 @@ class SequenceEstimator(BaseEstimator):
         return self.estimator.set_params(**params)
 
     def fit(self, X, y):
-        X, y = Subsequensor(step=self.step).transform(X, y)
+        X, y = Subsequensor(step=self.step, max_subsequence=self.max_subsequence).transform(X, y)
         X, y = sum(X, []), sum(y, []) # concat all data together
         self.estimator.fit(X, y)
         return self
