@@ -124,7 +124,7 @@ class CalculateSpectrum(BaseEstimator, TransformerMixin):
 
 class FlattenShape(BaseEstimator, TransformerMixin):
     """
-    Flattens the shape of samples to a single vector. this is useful in cases
+    Flattens the shape of samples to a single vector. This is useful in cases
     when "classic" models like SVM are used.
 
     Parameters
@@ -133,10 +133,15 @@ class FlattenShape(BaseEstimator, TransformerMixin):
     """
 
     def fit(self, X, y=None):
+        self.shape = X[0].shape
         return self
 
     def transform(self, X, y=None):
         V = np.array([np.ravel(x) for x in X])
+        return V
+
+    def inverse_transform(self, X, y=None):
+        V = np.array([np.reshape(x, self.shape) for x in X])
         return V
 
 # Wrapper for the standard classes of sklearn to work with sequence labeling
