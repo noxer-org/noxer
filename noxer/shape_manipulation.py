@@ -77,7 +77,7 @@ def select_nn(W, nn_name):
 
 
 
-def make_ffnn_weights(X, Y, n_neurons, n_layers, act, out_act="linear", nn_name="nn", W={}, rnd = rnd_gen):
+def make_ffnn_weights(X, Y, n_neurons, n_layers, act, out_act="linear", nn_name="nn", W=None, rnd = rnd_gen):
     """
 
     :param X: training inputs
@@ -90,6 +90,10 @@ def make_ffnn_weights(X, Y, n_neurons, n_layers, act, out_act="linear", nn_name=
     :param W: dictionary where to write the results. New one is used if not provided.
     :return:
     """
+
+    if W is None:
+        W = {}
+
     Xsz, Ysz = X.shape[-1], Y.shape[-1]
     Asz, Bsz = Xsz, n_neurons
 

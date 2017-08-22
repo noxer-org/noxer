@@ -267,9 +267,9 @@ class SequenceEstimator(BaseEstimator):
         return R
 
     def score(self, X, y):
-        X, y = Subsequensor(step=self.step).transform(X, y)
-        scores = [self.estimator.score(xv, yv) for xv, yv in zip(X, y)]
-        return float(np.mean(scores))
+        X, y = Subsequensor(step=self.step, max_subsequence=self.max_subsequence).transform(X, y)
+        X, y = sum(X, []), sum(y, []) # concat all data together
+        return self.estimator.score(X, y)
 
 # Classes that work with sequences directly
 
