@@ -252,7 +252,8 @@ class SequenceEstimator(BaseEstimator):
             self.step = params[step_name]
             params = params.copy()
             del params[step_name]
-        return self.estimator.set_params(**params)
+        self.estimator.set_params(**params)
+        return self
 
     def fit(self, X, y):
         X, y = Subsequensor(step=self.step, max_subsequence=self.max_subsequence).transform(X, y)
