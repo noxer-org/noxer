@@ -4,7 +4,7 @@ Contains a set of useful procedures and classes for sequence processing.
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin, BaseEstimator, TransformerMixin
+from sklearn.base import ClassifierMixin, BaseEstimator, TransformerMixin, clone
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -145,6 +145,45 @@ class FlattenShape(BaseEstimator, TransformerMixin):
         return V
 
 # Wrapper for the standard classes of sklearn to work with sequence labeling
+
+class SequenceTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, transformer):
+        """
+        Applies transformer to every element in input sequence.
+        transformer: TransformerMixin
+        """
+        self.base_transformer = transformer
+        self.transformer_ = None
+
+    def fit(self, X, y=None):
+        """
+        Fit base transformer to the set of sequences.
+
+        X: iterable of np.ndarray
+        y: iterable
+
+        """
+        # stack all the elements into one huge dataset
+        transformer = clone(self.base_transformer)
+
+        if y is None:
+            transformer.fit(np.row_stack(X))
+        else:
+            transformer.fit(np.row_stack(X), np.concatenate(y))
+
+        return self
+
+    def transform(self, X, y=None):
+        if y is None:
+            return [self.transformer_.transform(xx) for xx in X]
+        else:
+            return [self.transformer_.transform(xx, yy) for xx, yy in zip(X, y)]
+
+    def set_params(self, **params):
+        self.base_transformer.set_params(**params)
+
+    def get_params(self, deep=True):
+        self.base_transformer.get_params(deep)
 
 
 class Subsequensor(BaseEstimator):

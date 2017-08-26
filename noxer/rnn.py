@@ -113,9 +113,6 @@ class KerasNNBase(BaseEstimator):
         while patience > 0 and max_iter > 0:
             max_iter -= 1
 
-            if max_iter % 10 == 0:
-                print(max_iter)
-
             self.model.fit(X_train,y_train, nb_epoch=1, batch_size=self.batch_size, verbose=0)
             val_loss = self.model.evaluate(X_val, y_val, verbose=0)
 
