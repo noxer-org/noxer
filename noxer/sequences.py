@@ -152,7 +152,7 @@ class SequenceTransformer(BaseEstimator, TransformerMixin):
         Applies transformer to every element in input sequence.
         transformer: TransformerMixin
         """
-        self.base_transformer = transformer
+        self.transformer = transformer
         self.transformer_ = None
 
     def fit(self, X, y=None):
@@ -164,26 +164,28 @@ class SequenceTransformer(BaseEstimator, TransformerMixin):
 
         """
         # stack all the elements into one huge dataset
-        transformer = clone(self.base_transformer)
+        self.transformer_ = clone(self.transformer)
+        X_conc = np.row_stack(x for x in X)
 
         if y is None:
-            transformer.fit(np.row_stack(X))
+            self.transformer_.fit(X_conc)
         else:
-            transformer.fit(np.row_stack(X), np.concatenate(y))
+            y_conc = np.concatenate([[v]*len(x) for x, v in zip(X,y)])
+            self.transformer_.fit(X_conc, y_conc)
 
         return self
 
     def transform(self, X, y=None):
         if y is None:
-            return [self.transformer_.transform(xx) for xx in X]
+            result = [self.transformer_.transform(xx) for xx in X]
         else:
-            return [self.transformer_.transform(xx, yy) for xx, yy in zip(X, y)]
+            result = [self.transformer_.transform(xx, [yy] * len(xx)) for xx, yy in zip(X, y)]
+
+        result = np.array(result)
+        return result
 
     def set_params(self, **params):
         self.base_transformer.set_params(**params)
-
-    def get_params(self, deep=True):
-        self.base_transformer.get_params(deep)
 
 
 class Subsequensor(BaseEstimator):

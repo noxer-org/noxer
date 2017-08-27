@@ -109,12 +109,16 @@ class KerasNNBase(BaseEstimator):
         patience = self.max_patience
         max_iter = self.max_iter
 
+        best_model_ = [np.copy(w) for w in self.model.get_weights()]
 
         while patience > 0 and max_iter > 0:
             max_iter -= 1
 
             self.model.fit(X_train,y_train, nb_epoch=1, batch_size=self.batch_size, verbose=0)
             val_loss = self.model.evaluate(X_val, y_val, verbose=0)
+
+            if np.isnan(val_loss) or np.isinf(val_loss):
+                break
 
             if val_loss < best_loss_:
                 best_loss_ = val_loss
