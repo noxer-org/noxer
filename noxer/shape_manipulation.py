@@ -94,7 +94,10 @@ def make_ffnn_weights(X, Y, n_neurons, n_layers, act, out_act="linear", nn_name=
     if W is None:
         W = {}
 
-    Xsz, Ysz = X.shape[-1], Y.shape[-1]
+
+    Xsz = X if isinstance(X, int) else X.shape[-1]
+    Ysz = Y if isinstance(Y, int) else Y.shape[-1]
+
     Asz, Bsz = Xsz, n_neurons
 
     for idx in range(n_layers+1):
