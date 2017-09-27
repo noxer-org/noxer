@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 
-from .base import GeneratorMixin
+from .base import GeneratorBase
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from keras.layers import Input, Dense, Lambda, Layer
@@ -19,13 +19,12 @@ from noxer.rnn import make_keras_picklable
 
 make_keras_picklable()
 
-class VaeGenerator(GeneratorMixin):
+class VaeGenerator(GeneratorBase):
     def __init__(self, latent_dim=2, intermediate_dim=256,
                  batch_size=100, epochs=50, D=1.0, epsilon_std=1.0,
-                 lr=0.001, beta_1=0.9, beta_2=0.999,
-                 X_prep=None, Y_prep=None, Y_post=None):
+                 lr=0.001, beta_1=0.9, beta_2=0.999):
 
-        super(VaeGenerator, self).__init__(X_prep, Y_prep, Y_post)
+        super(VaeGenerator, self).__init__()
 
         self.latent_dim = latent_dim
         self.batch_size = batch_size
@@ -38,7 +37,7 @@ class VaeGenerator(GeneratorMixin):
         self.beta_1 = beta_1
         self.beta_2 = beta_2
 
-    def _fit(self, X, Y, **kwargs):
+    def fit(self, X, Y, **kwargs):
 
         self.intermediate_dim = int(self.intermediate_dim)
         condition_dim = X.shape[-1]
@@ -124,7 +123,7 @@ class VaeGenerator(GeneratorMixin):
     def _generate_noise(self, N):
         return np.random.randn(N, self.latent_dim)
 
-    def _predict(self, X, *args, **kwargs):
+    def predict(self, X, *args, **kwargs):
         lat = self._generate_noise(len(X))
         Yp = self.generator.predict([X, lat], verbose=0)
         return Yp
