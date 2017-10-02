@@ -1,3 +1,4 @@
+[![CircleCI](https://circleci.com/gh/noxer-org/noxer.svg?style=svg)](https://circleci.com/gh/noxer-org/noxer)
 [![Code Health](https://landscape.io/github/noxer-org/noxer/master/landscape.svg?style=flat)](https://landscape.io/github/noxer-org/noxer/master)
 ![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg)
 ![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)
