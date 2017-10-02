@@ -21,3 +21,5 @@ sudo pip install -e .
 ## Examples
 
 See example usage in `examples` folder. 
+
+Icon made by Freepik from www.flaticon.com .
