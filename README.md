@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/noxer-org/noxer.svg?branch=master)](https://travis-ci.org/noxer-org/noxer)
 ![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg)
 ![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
