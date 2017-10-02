@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.5
+    steps:
+      - checkout
+      - run: bash dependencies.sh
+      - run: pytest noxer/tests
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test
+
