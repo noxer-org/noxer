@@ -23,6 +23,12 @@ class SGM(GeneratorBase):
 
     def __init__(self, estimator):
         self.estimator = estimator
+        self.models = None # models used for generation of output features, as well as scales for features
+
+    def set_params(self, **params):
+        """Delegate parameters to estimator"""
+        self.estimator.set_params(**params)
+        return self
 
     def fit(self, X, Y, **kwargs):
         """Fit generative models to the data
@@ -38,17 +44,95 @@ class SGM(GeneratorBase):
 
         # all inputs to the model
         Cond_list = [X]
+        self.models = []
 
         for c in Y.T:
             # last feature is always the output
 
             m, M = np.min(c), np.max(c)
+            interval = M - m
 
-            # "real" data
+            # expand intervals a bit
+            m -= interval*0.1
+            M += interval*0.1
+
+            # actual points
             C = [np.column_stack(Cond_list + [c])]
             y = [np.ones_like(c)]
 
+            # wrong points
+            for i in range(4):
+                cv = np.random.rand(len(c))*(M - m) + m
+                C.append(np.column_stack(Cond_list + [cv]))
+                y.append(np.zeros_like(c))
 
+            # stack teh data
+            C = np.row_stack(C)
+            y = np.concatenate(y)
+
+            # fit the model
+            model = clone(self.estimator)
+            model.fit(C, y)
+
+            # save model and its range
+            self.models.append((model, m, M))
+            Cond_list += [c]
+
+        return self
+
+    def predict(self, X, **kwargs):
+        """Generate samples using the generative model
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape [n_samples, n_features]
+            The data used to condition the generative model's outputs.
+
+        """
+
+        if not self.models:
+            raise AssertionError('Model is not fitted yet. Please call fit first')
+
+        # initial condition list
+        Cond_list = [X]
+        Y = []
+
+        # interval is a range of feature values
+        for model, m, M in self.models:
+            yv = np.linspace(m, M, 10000)
+
+            C = np.column_stack(Cond_list + [np.ones(len(X))])
+
+            Yp = []
+
+            # get distributions for outputs
+            for v in yv:
+                C[:, -1] = v
+                yp = model.predict(C)
+                Yp.append(yp)
+
+            # distribution for a single output is a row
+            Yp = np.column_stack(Yp)
+
+            # normalize distribution values
+            Yp = np.maximum(Yp, 0.0)
+            Yp = (Yp.T / np.sum(Yp, axis=-1)).T
+
+            # do interpolation here?
+
+            # generate random values
+            c = [
+                np.random.choice(yv, p=p) for p in Yp
+            ]
+
+            # remember the output
+            Y.append(c)
+
+            # condition next outputs on this one
+            Cond_list.append(c)
+
+        Y = np.column_stack(Y)
+        return Y
 
 
 
