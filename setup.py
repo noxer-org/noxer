@@ -11,5 +11,5 @@ setup(name='noxer',
       license='MIT',
       author='The noxer contributors',
       packages=['noxer'],
-      install_requires=["numpy", "scipy", "scikit-learn", "keras", "tensorflow"]
+      install_requires=["numpy", "scipy", "scikit-learn", "keras", "h5py"]
       )
