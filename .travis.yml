@@ -10,9 +10,9 @@ matrix:
           env: LATEST="true" COVERAGE="false" NOTEBOOKS="false"
 install:
     - sudo apt-get update
-    - source ci/.travis_install.sh
+    - source continuous_integration/.travis_install.sh
 script:
-    - bash ci/.travis_test.sh
+    - bash continuous_integration/.travis_test.sh
 after_success:
     - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
 notifications:
