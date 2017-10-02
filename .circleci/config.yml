@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.5
+    steps:
+      - checkout
+      - run: sudo pip install pytest
+      - run: sudo pip install -e .
+      - run: pytest noxer/tests
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+
