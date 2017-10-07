@@ -63,26 +63,26 @@ class IOTransform(BaseEstimator):
 
         elements = {'augm', 'X_prep', 'Y_prep', 'Y_post', 'model'}
 
-        params = {
+        self_params = {
             k:v for k, v in params.items()
             if not any(
                 k.startswith(p.lower()) for p in elements
             )
         }
 
-        BaseEstimator.set_params(self, **params)
+        BaseEstimator.set_params(self, **self_params)
 
         # set attributes of elements
         for e in elements:
             element = getattr(self, e)
 
             if isinstance(element, BaseEstimator):
-                element.set_params(
-                    **{
-                        k[len(e)+2:]: v for k, v in params.items()
-                        if k.startswith(e.lower())
-                    }
-                )
+                subprm = {
+                    k[len(e)+2:]: v for k, v in params.items()
+                    if k.startswith(e.lower())
+                }
+
+                element.set_params(**subprm)
 
         return self
 
