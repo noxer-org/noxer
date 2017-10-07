@@ -14,7 +14,7 @@ from sklearn.base import clone
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 
-from noxer.gm.base import IOTransform
+from noxer.pipelines import IOTransform
 from noxer.gm.metrics import distribution_similarity
 from noxer.gm.vae import VaeGenerator
 from skopt import BayesSearchCV
