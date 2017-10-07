@@ -84,6 +84,8 @@ class IOTransform(BaseEstimator):
                     }
                 )
 
+        return self
+
     def _fit_preprocessors(self, X, Y):
         """Fits all preprocessors to the data.
 
@@ -254,6 +256,8 @@ class IOTransform(BaseEstimator):
             Score from 0.0 to 1.0 that indicates quality of estimations.
         """
 
-        X, Y = self.augm.transform(X, Y)
+        if self.augm is not None:
+            X, Y = self.augm.transform(X, Y)
+
         return self.score_no_augmentation(X, Y, *args, **kwargs)
 

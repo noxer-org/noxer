@@ -147,30 +147,42 @@ class FlattenShape(BaseEstimator, TransformerMixin):
 # Wrapper for the standard classes of sklearn to work with sequence labeling
 
 class SequenceTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, transformer):
+    def __init__(self, transformer, mode='stack'):
         """
         Applies transformer to every element in input sequence.
         transformer: TransformerMixin
+        mode: How to preprocess sequences for transformer fitting.
+              default: stack all sequences into one huge sequence
+              so that then it looks like a normal 2d training set
         """
         self.transformer = transformer
+        self.mode = mode
         self.transformer_ = None
 
     def fit(self, X, y=None):
         """
         Fit base transformer to the set of sequences.
 
-        X: iterable of np.ndarray
-        y: iterable
+        X: iterable of shape [n_samples, ...]
+        y: iterable of shape [n_samples, ...]
 
         """
         # stack all the elements into one huge dataset
         self.transformer_ = clone(self.transformer)
-        X_conc = np.row_stack(x for x in X)
+
+        if self.mode == 'stack':
+            X_conc = np.row_stack(x for x in X)
+
+            # might have bugs here in future :(
+            if y is not None:
+                y_conc = np.concatenate([[v] * len(x) for x, v in zip(X, y)])
+        else:
+            X_conc = X
+            y_conc = y
 
         if y is None:
             self.transformer_.fit(X_conc)
         else:
-            y_conc = np.concatenate([[v]*len(x) for x, v in zip(X,y)])
             self.transformer_.fit(X_conc, y_conc)
 
         return self
@@ -186,6 +198,7 @@ class SequenceTransformer(BaseEstimator, TransformerMixin):
 
     def set_params(self, **params):
         self.base_transformer.set_params(**params)
+        return self
 
 
 class Subsequensor(BaseEstimator):
