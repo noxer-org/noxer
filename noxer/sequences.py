@@ -72,12 +72,13 @@ class PadSubsequence(BaseEstimator, TransformerMixin):
     length : float, length of the subsequence to take
 
     """
-    def __init__(self, length=10):
+    def __init__(self, length=10, step=1):
         self.length = length
+        self.step = step
 
     def _check_input(self, X):
         if len(X.shape) < 2:
-            raise ValueError("The input sequence to the ")
+            raise ValueError("The input should be a sequence, found shape %s" % X.shape)
 
     def fit(self,X,y=None):
         # remeber the num. of features
@@ -89,10 +90,11 @@ class PadSubsequence(BaseEstimator, TransformerMixin):
         R = []
         for x in X:
             if len(x) >= self.length:
-                R.append(x[-self.length:])
+                R.append(x[-self.length::self.step])
             else:
                 z = np.zeros((self.length - len(x), x.shape[-1]))
                 zx = np.row_stack((z,x))
+                zx = zx[::self.step]
                 R.append(zx)
         R = np.array(R)
         return R
