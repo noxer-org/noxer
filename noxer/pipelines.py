@@ -2,8 +2,15 @@
 A set of helper classes for better pipelining of data preprocessing
 for machine learning and beyond.
 """
+import numpy as np
 
 from sklearn.base import BaseEstimator
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import Lasso
+from sklearn.dummy import DummyRegressor
+
+from searchgrid import set_grid
 
 
 class IOTransform(BaseEstimator):
@@ -261,3 +268,48 @@ class IOTransform(BaseEstimator):
 
         return self.score_no_augmentation(X, Y, *args, **kwargs)
 
+
+def make_regressors(subset=None):
+    available_regressors = {
+        'gbrt': set_grid(GradientBoostingRegressor(),
+                         n_estimators=[2 ** i for i in range(1, 11)],
+                         learning_rate=[0.1, 0.01, 0.001],
+                         ),
+        'lasso': set_grid(Lasso(),
+                         alpha=np.exp(np.linspace(-8, 8)),
+                         )
+    }
+
+    if subset is None:
+        subset = list(available_regressors.keys())
+
+    result = [available_regressors[k] for k in subset]
+
+    pipe = Pipeline(
+        [('finmodel', DummyRegressor())]
+    )
+
+    pipe = set_grid(pipe, finmodel=result)
+
+    return pipe
+
+
+def make_dummy_regressor(subset=None):
+    available_regressors = {
+        'dummy': set_grid(DummyRegressor(),
+                         strategy=['mean', 'median']
+                         ),
+    }
+
+    if subset is None:
+        subset = list(available_regressors.keys())
+
+    result = [available_regressors[k] for k in subset]
+
+    pipe = Pipeline(
+        [('model', Lasso())]
+    )
+
+    pipe = set_grid(pipe, model=result)
+
+    return pipe
