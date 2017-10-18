@@ -8,14 +8,28 @@ import numpy as np
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
     """Selects a single column with index `key` from some matrix X"""
-    def __init__(self, key):
+    def __init__(self, key, row_space=True, as_matrix=True):
         self.key = key
+        self.row_space = row_space
+        self.as_matrix = as_matrix
 
     def fit(self, X, y=None):
         return self  # do nothing during fitting procedure
 
     def transform(self, data_matrix):
-        return data_matrix[:, [self.key]]  # return a matrix with single column
+        # return a matrix with single column
+        if self.row_space:
+            R = data_matrix[:, [self.key]] # eg numpy array
+        else:
+            R = data_matrix[[self.key]] # eg pandas dataframe
+
+        R = np.array(R)
+
+        if not self.as_matrix:
+            R = R[:, 0]
+
+        return R
+
 
 
 class OneHotEncoder(BaseEstimator, TransformerMixin):
