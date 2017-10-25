@@ -86,6 +86,9 @@ class PadSubsequence(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
+        if not hasattr(self, 'step'):
+            self.step = 1
+
         # X might be a list
         R = []
         for x in X:
