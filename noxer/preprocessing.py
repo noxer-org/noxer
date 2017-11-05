@@ -37,7 +37,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
     column matrix of categorical values."""
     def fit(self, X, y=None):
         # create label encoder
-        M = X[:, 0]
+        M = [x[0] for x in X]
         self.encoder = LabelBinarizer()
         self.encoder.fit(M)
         return self
