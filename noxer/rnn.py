@@ -118,7 +118,7 @@ class KerasNNBase(BaseEstimator):
         while patience > 0 and max_iter > 0:
             max_iter -= 1
 
-            val_loss = self.model.fit(X_train,y_train, nb_epoch=1, batch_size=self.batch_size, verbose=0)
+            val_loss = self.model.fit(X_train,y_train, epochs=1, batch_size=self.batch_size, verbose=0)
             val_loss = val_loss.history['loss'][-1]
             #val_loss = self.model.evaluate(X_val, y_val, verbose=0)
 
@@ -244,7 +244,7 @@ class DNNClassifier(KerasClassifierBase):
             x = Dense(self.n_neurons)(x)
             x = LeakyReLU(0.05)(x)
         x = Dense(n_classes, activation='softmax')(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
 
 class KerasRegressorBase(KerasNNBase, RegressorMixin):
