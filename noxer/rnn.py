@@ -176,7 +176,7 @@ class KerasClassifierBase(KerasNNBase, ClassifierMixin):
             x = Dense(n_classes, activation='tanh')(x)
             x = Activation(bad_activation)(x)
             print('Infeasible!')
-            model = keras.models.Model(input=ip, output=x)
+            model = keras.models.Model(inputs=ip, outputs=x)
 
         model.compile(
             optimizer=optimizer,
@@ -204,7 +204,7 @@ class RNNClassifier(KerasClassifierBase):
         for i in range(self.n_layers):
             x = GRU(self.n_neurons)(x)
         x = Dense(n_classes, activation='softmax')(x)
-        return keras.models.Model(input=ip, output=x)
+        return keras.models.Model(inputs=ip, outputs=x)
 
 
 class CNN1DClassifier(KerasClassifierBase):
@@ -229,7 +229,7 @@ class CNN1DClassifier(KerasClassifierBase):
             x = LeakyReLU(0.05)(x)
         x = Flatten()(x)
         x = Dense(n_classes, activation='softmax')(x)
-        return keras.models.Model(input=ip, output=x)
+        return keras.models.Model(inputs=ip, outputs=x)
 
 
 class DNNClassifier(KerasClassifierBase):
@@ -267,7 +267,7 @@ class KerasRegressorBase(KerasNNBase, RegressorMixin):
             ip = Input(shape=X[0].shape)
             x = ip
             x = Dense(1)(x)
-            model = keras.models.Model(input=ip, output=x)
+            model = keras.models.Model(inputs=ip, outputs=x)
 
         model.compile(
             optimizer=optimizer,
@@ -290,7 +290,7 @@ class RNNRegressor(KerasRegressorBase):
             x = GRU(self.n_neurons)(x)
             x = LeakyReLU(0.05)(x)
         x = Dense(1)(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
 
 class CNN1DRegressor(KerasRegressorBase):
@@ -312,7 +312,7 @@ class CNN1DRegressor(KerasRegressorBase):
             x = LeakyReLU(0.05)(x)
         x = Flatten()(x)
         x = Dense(1)(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
 
 class DNNRegressor(KerasRegressorBase):
@@ -326,5 +326,5 @@ class DNNRegressor(KerasRegressorBase):
             x = Dense(self.n_neurons)(x)
             x = LeakyReLU(0.05)(x)
         x = Dense(1)(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
