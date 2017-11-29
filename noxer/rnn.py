@@ -176,6 +176,7 @@ class KerasClassifierBase(KerasNNBase, ClassifierMixin):
             x = Dense(n_classes, activation='tanh')(x)
             x = Activation(bad_activation)(x)
             print('Infeasible!')
+            print(ex)
             model = keras.models.Model(inputs=ip, outputs=x)
 
         model.compile(
@@ -197,12 +198,13 @@ class KerasClassifierBase(KerasNNBase, ClassifierMixin):
 class RNNClassifier(KerasClassifierBase):
     def create_architecture(self, X, n_classes):
         import keras.models
-        from keras.layers import Input, Dense, GRU
+        from keras.layers import Input, Dense, GRU, Flatten
         from keras.layers.advanced_activations import LeakyReLU
         ip = Input(shape=X[0].shape)
         x = ip
         for i in range(self.n_layers):
-            x = GRU(self.n_neurons)(x)
+            x = GRU(self.n_neurons, return_sequences=True)(x)
+        x = Flatten()(x)
         x = Dense(n_classes, activation='softmax')(x)
         return keras.models.Model(inputs=ip, outputs=x)
 
