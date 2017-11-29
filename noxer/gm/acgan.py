@@ -1,3 +1,5 @@
+from sklearn.preprocessing import LabelBinarizer
+
 import torch, time, os, pickle
 import numpy as np
 import torch.nn as nn
@@ -102,42 +104,61 @@ class ACGAN(object):
                  lrG=0.0002, lrD=0.0002, beta1=0.5, beta2=0.999,
                  verbose=0):
         # parameters
+        self.height = height
+        self.width= width
+        self.channels = channels
         self.epoch = epochs
         self.sample_num = 100
         self.batch_size = batch_size
         self.gpu_mode = use_gpu
         self.verbosity = verbose
+        self.lrG = lrG
+        self.lrD = lrD
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.verbose = beta2
+
+    def notify(self, message, verbosity=1):
+        if self.verbosity >= verbosity:
+            print(message)
+
+    def train(self, X, Y, callback=None):
+        self.train_hist = {}
+        self.train_hist['D_loss'] = []
+        self.train_hist['G_loss'] = []
+        self.train_hist['per_epoch_time'] = []
+        self.train_hist['total_time'] = []
 
         # networks init
-        self.G = generator(height, width, channels)
-        self.D = discriminator(height, width, channels)
-        self.G_optimizer = optim.Adam(self.G.parameters(), lr=lrG, betas=(beta1, beta2))
-        self.D_optimizer = optim.Adam(self.D.parameters(), lr=lrD, betas=(beta1, beta2))
+        self.G = generator(self.height, self.width, self.channels)
+        self.D = discriminator(self.height, self.width, self.channels)
+        G_optimizer = optim.Adam(self.G.parameters(), lr=self.lrG, betas=(self.beta1, self.beta2))
+        D_optimizer = optim.Adam(self.D.parameters(), lr=self.lrD, betas=(self.beta1, self.beta2))
 
         if self.gpu_mode:
             self.G.cuda()
             self.D.cuda()
-            self.BCE_loss = nn.BCELoss().cuda()
-            self.CE_loss = nn.CrossEntropyLoss().cuda()
+            BCE_loss = nn.BCELoss().cuda()
+            CE_loss = nn.CrossEntropyLoss().cuda()
         else:
-            self.BCE_loss = nn.BCELoss()
-            self.CE_loss = nn.CrossEntropyLoss()
+            BCE_loss = nn.BCELoss()
+            CE_loss = nn.CrossEntropyLoss()
 
-        #print('---------- Networks architecture -------------')
-        #utils.print_network(self.G)
-        #utils.print_network(self.D)
-        #print('-----------------------------------------------')
+        # print('---------- Networks architecture -------------')
+        # utils.print_network(self.G)
+        # utils.print_network(self.D)
+        # print('-----------------------------------------------')
 
         # load mnist
         self.z_dim = 62
         self.y_dim = 10
 
         # fixed noise & condition
-        self.sample_z_ = torch.zeros((self.sample_num, self.z_dim))
+        sample_z_ = torch.zeros((self.sample_num, self.z_dim))
         for i in range(10):
-            self.sample_z_[i*self.y_dim] = torch.rand(1, self.z_dim)
+            sample_z_[i * self.y_dim] = torch.rand(1, self.z_dim)
             for j in range(1, self.y_dim):
-                self.sample_z_[i*self.y_dim + j] = self.sample_z_[i*self.y_dim]
+                sample_z_[i * self.y_dim + j] = sample_z_[i * self.y_dim]
 
         temp = torch.zeros((10, 1))
         for i in range(self.y_dim):
@@ -145,33 +166,18 @@ class ACGAN(object):
 
         temp_y = torch.zeros((self.sample_num, 1))
         for i in range(10):
-            temp_y[i*self.y_dim: (i+1)*self.y_dim] = temp
+            temp_y[i * self.y_dim: (i + 1) * self.y_dim] = temp
 
-        self.sample_y_ = torch.zeros((self.sample_num, self.y_dim))
-        self.sample_y_.scatter_(1, temp_y.type(torch.LongTensor), 1)
-        if self.gpu_mode:
-            self.sample_z_, self.sample_y_ = Variable(self.sample_z_.cuda(), volatile=True), Variable(self.sample_y_.cuda(), volatile=True)
-        else:
-            self.sample_z_, self.sample_y_ = Variable(self.sample_z_, volatile=True), Variable(self.sample_y_, volatile=True)
-
-    def notify(self, message, verbosity=1):
-        if self.verbosity > verbosity:
-            print(message)
-
-    def train(self, X, Y):
-        self.train_hist = {}
-        self.train_hist['D_loss'] = []
-        self.train_hist['G_loss'] = []
-        self.train_hist['per_epoch_time'] = []
-        self.train_hist['total_time'] = []
+        sample_y_ = torch.zeros((self.sample_num, self.y_dim))
+        sample_y_.scatter_(1, temp_y.type(torch.LongTensor), 1)
 
         # setup dataset
-        data_Y, data_X = torch.LongTensor(X), torch.FloatTensor(Y)
+        data_Y, data_X = torch.FloatTensor(X), torch.FloatTensor(Y)
 
         if self.gpu_mode:
-            self.y_real_, self.y_fake_ = Variable(torch.ones(self.batch_size, 1).cuda()), Variable(torch.zeros(self.batch_size, 1).cuda())
+            y_real_, y_fake_ = Variable(torch.ones(self.batch_size, 1).cuda()), Variable(torch.zeros(self.batch_size, 1).cuda())
         else:
-            self.y_real_, self.y_fake_ = Variable(torch.ones(self.batch_size, 1)), Variable(torch.zeros(self.batch_size, 1))
+            y_real_, y_fake_ = Variable(torch.ones(self.batch_size, 1)), Variable(torch.zeros(self.batch_size, 1))
 
         self.D.train()
         self.notify('training start!!')
@@ -190,44 +196,50 @@ class ACGAN(object):
                     x_, z_, y_vec_ = Variable(x_), Variable(z_), Variable(y_vec_)
 
                 # update D network
-                self.D_optimizer.zero_grad()
+                D_optimizer.zero_grad()
 
                 D_real, C_real = self.D(x_)
-                D_real_loss = self.BCE_loss(D_real, self.y_real_)
-                C_real_loss = self.CE_loss(C_real, torch.max(y_vec_, 1)[1])
+                D_real_loss = BCE_loss(D_real, y_real_)
+                mxv = torch.max(y_vec_, 1)[1]
+                C_real_loss = CE_loss(C_real, mxv)
 
                 G_ = self.G(z_, y_vec_)
                 D_fake, C_fake = self.D(G_)
-                D_fake_loss = self.BCE_loss(D_fake, self.y_fake_)
-                C_fake_loss = self.CE_loss(C_fake, torch.max(y_vec_, 1)[1])
+                D_fake_loss = BCE_loss(D_fake, y_fake_)
+                mxv = torch.max(y_vec_, 1)[1]
+                C_fake_loss = CE_loss(C_fake, mxv)
 
                 D_loss = D_real_loss + C_real_loss + D_fake_loss + C_fake_loss
                 self.train_hist['D_loss'].append(D_loss.data[0])
 
                 D_loss.backward()
-                self.D_optimizer.step()
+                D_optimizer.step()
 
                 # update G network
-                self.G_optimizer.zero_grad()
+                G_optimizer.zero_grad()
 
                 G_ = self.G(z_, y_vec_)
                 D_fake, C_fake = self.D(G_)
 
-                G_loss = self.BCE_loss(D_fake, self.y_real_)
-                C_fake_loss = self.CE_loss(C_fake, torch.max(y_vec_, 1)[1])
+                G_loss = BCE_loss(D_fake, y_real_)
+                C_fake_loss = CE_loss(C_fake, torch.max(y_vec_, 1)[1])
 
                 G_loss += C_fake_loss
                 self.train_hist['G_loss'].append(G_loss.data[0])
 
                 G_loss.backward()
-                self.G_optimizer.step()
+                G_optimizer.step()
 
-                if ((iter + 1) % 100) == 0:
+
+                if ((iter + 1) % 10) == 0:
                     self.notify("Epoch: [%2d] [%4d/%4d] D_loss: %.8f, G_loss: %.8f" %
                           ((epoch + 1), (iter + 1), len(data_X) // self.batch_size, D_loss.data[0], G_loss.data[0]))
 
+            if callback is not None:
+                callback()
+
             self.train_hist['per_epoch_time'].append(time.time() - epoch_start_time)
-            self.visualize_results((epoch+1))
+            self.notify(epoch)
 
         self.train_hist['total_time'].append(time.time() - start_time)
         self.notify("Avg one epoch time: %.2f, total %d epochs time: %.2f" % (np.mean(self.train_hist['per_epoch_time']),
@@ -245,6 +257,12 @@ def gpu_setting(kwargs):
     return use_gpu
 
 
+def get_callback(kwargs):
+    if 'callback' in kwargs:
+        return kwargs['callback']
+    return None
+
+
 class ACGANCategoryToImageGenerator(GeneratorBase):
     def __init__(self, use_gpu=True, epochs=32, batch_size=64,
                  lrG=0.0002, lrD=0.0002, beta1=0.5, beta2=0.999,
@@ -259,12 +277,19 @@ class ACGANCategoryToImageGenerator(GeneratorBase):
         self.verbose = verbose
 
         self.net = None
+        self.bin = None
 
     def fit(self, X, Y, **kwargs):
+        # shuffle dimensions to fit to pytorch conventions
+        Y = np.transpose(Y, (0, 3, 1, 2))
 
-        height = Y.shape[1]
-        width = Y.shape[2]
-        channels = Y.shape[3]
+        height = Y.shape[2]
+        width = Y.shape[3]
+        channels = Y.shape[1]
+
+        # binarize the labels
+        self.bin = LabelBinarizer()
+        X = self.bin.fit_transform(X)
 
         self.net = ACGAN(
             height, width, channels,
@@ -278,7 +303,10 @@ class ACGANCategoryToImageGenerator(GeneratorBase):
             verbose = self.verbose,
         )
 
-        self.net.train(X, Y)
+        self.net.train(X, Y, callback=get_callback(kwargs))
+        self.net.D.eval()
+        self.net.G.eval()
+
 
     def predict_noise(self, X, Z, **kwargs):
         if self.net is None:
@@ -286,19 +314,21 @@ class ACGANCategoryToImageGenerator(GeneratorBase):
 
         self.net.G.eval()
 
-        temp = torch.LongTensor(X)
-        iX = torch.FloatTensor(len(X), 10)
-        iX.zero_()
-        iX.scatter_(1, temp, 1)
+        iX = torch.FloatTensor(self.bin.transform(X))
 
         if gpu_setting(kwargs):
             iZ, iX = Variable(Z.cuda(), volatile=True), Variable(iX.cuda(), volatile=True)
         else:
             iZ, iX = Variable(Z, volatile=True), Variable(iX, volatile=True)
 
-        Y = self.net.G(torch.FloatTensor(iZ), torch.LongTensor(iX))
+        Y = self.net.G(iZ, iX)
+        Y = Y.cpu().data.numpy()
+        Y = np.transpose(Y, (0, 2, 3, 1))
         return Y
 
     def predict(self, X, **kwargs):
-        Z = torch.rand((self.batch_size, self.z_dim))
+        # generate noise
+        Z = torch.rand((len(X), self.net.z_dim))
+
+        # make generation
         return self.predict_noise(X, Z, **kwargs)
