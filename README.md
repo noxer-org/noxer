@@ -10,7 +10,7 @@ This package aims to simplify working with a range of AI problems. We keep
  for the extensions of the code.
 
 At current, the following is possible:
-1. Supervised learning with deep, recurrent convoneural neural networks with PyTorch backend.
+1. Supervised learning with deep, recurrent convolutional neural neural networks with PyTorch backend.
 2. Learning generative models such as VAE and GAN's for distributions simple and complex.
 
 ## What are the benefits of using Noxer
