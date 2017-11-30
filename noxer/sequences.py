@@ -86,6 +86,9 @@ class PadSubsequence(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
+        if not hasattr(self, 'step'):
+            self.step = 1
+
         # X might be a list
         R = []
         for x in X:
@@ -203,7 +206,28 @@ class SequenceTransformer(BaseEstimator, TransformerMixin):
         return self
 
 
-class Subsequensor(BaseEstimator):
+class Seq1Dto2D(BaseEstimator, TransformerMixin):
+    """
+    Useful for working with text sequences.
+    Such sequence is just a list of characters.
+    This converts a sequence of elements to a sequence
+    of lists of size 1 of characters. So
+    "abc" -> [['a'], ['b'], ['c']]
+    Useful for applications where you do not want
+    to convert text to features explicitly.
+    """
+
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        return [np.array(list(xx))[:, np.newaxis] for xx in X]
+
+
+class Subsequensor(BaseEstimator, TransformerMixin):
     """
     Creates views in all subsequences of a numpy sequence.
 

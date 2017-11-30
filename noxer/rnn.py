@@ -118,7 +118,7 @@ class KerasNNBase(BaseEstimator):
         while patience > 0 and max_iter > 0:
             max_iter -= 1
 
-            val_loss = self.model.fit(X_train,y_train, nb_epoch=1, batch_size=self.batch_size, verbose=0)
+            val_loss = self.model.fit(X_train,y_train, epochs=1, batch_size=self.batch_size, verbose=0)
             val_loss = val_loss.history['loss'][-1]
             #val_loss = self.model.evaluate(X_val, y_val, verbose=0)
 
@@ -176,7 +176,8 @@ class KerasClassifierBase(KerasNNBase, ClassifierMixin):
             x = Dense(n_classes, activation='tanh')(x)
             x = Activation(bad_activation)(x)
             print('Infeasible!')
-            model = keras.models.Model(input=ip, output=x)
+            print(ex)
+            model = keras.models.Model(inputs=ip, outputs=x)
 
         model.compile(
             optimizer=optimizer,
@@ -197,14 +198,15 @@ class KerasClassifierBase(KerasNNBase, ClassifierMixin):
 class RNNClassifier(KerasClassifierBase):
     def create_architecture(self, X, n_classes):
         import keras.models
-        from keras.layers import Input, Dense, GRU
+        from keras.layers import Input, Dense, GRU, Flatten
         from keras.layers.advanced_activations import LeakyReLU
         ip = Input(shape=X[0].shape)
         x = ip
         for i in range(self.n_layers):
-            x = GRU(self.n_neurons)(x)
+            x = GRU(self.n_neurons, return_sequences=True)(x)
+        x = Flatten()(x)
         x = Dense(n_classes, activation='softmax')(x)
-        return keras.models.Model(input=ip, output=x)
+        return keras.models.Model(inputs=ip, outputs=x)
 
 
 class CNN1DClassifier(KerasClassifierBase):
@@ -229,7 +231,7 @@ class CNN1DClassifier(KerasClassifierBase):
             x = LeakyReLU(0.05)(x)
         x = Flatten()(x)
         x = Dense(n_classes, activation='softmax')(x)
-        return keras.models.Model(input=ip, output=x)
+        return keras.models.Model(inputs=ip, outputs=x)
 
 
 class DNNClassifier(KerasClassifierBase):
@@ -244,7 +246,7 @@ class DNNClassifier(KerasClassifierBase):
             x = Dense(self.n_neurons)(x)
             x = LeakyReLU(0.05)(x)
         x = Dense(n_classes, activation='softmax')(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
 
 class KerasRegressorBase(KerasNNBase, RegressorMixin):
@@ -267,7 +269,7 @@ class KerasRegressorBase(KerasNNBase, RegressorMixin):
             ip = Input(shape=X[0].shape)
             x = ip
             x = Dense(1)(x)
-            model = keras.models.Model(input=ip, output=x)
+            model = keras.models.Model(inputs=ip, outputs=x)
 
         model.compile(
             optimizer=optimizer,
@@ -290,7 +292,7 @@ class RNNRegressor(KerasRegressorBase):
             x = GRU(self.n_neurons)(x)
             x = LeakyReLU(0.05)(x)
         x = Dense(1)(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
 
 class CNN1DRegressor(KerasRegressorBase):
@@ -312,7 +314,7 @@ class CNN1DRegressor(KerasRegressorBase):
             x = LeakyReLU(0.05)(x)
         x = Flatten()(x)
         x = Dense(1)(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
 
 class DNNRegressor(KerasRegressorBase):
@@ -326,5 +328,5 @@ class DNNRegressor(KerasRegressorBase):
             x = Dense(self.n_neurons)(x)
             x = LeakyReLU(0.05)(x)
         x = Dense(1)(x)
-        model = keras.models.Model(input=ip, output=x)
+        model = keras.models.Model(inputs=ip, outputs=x)
         return model
