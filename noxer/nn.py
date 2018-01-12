@@ -89,7 +89,7 @@ class PTLBase(BaseEstimator):
         ------
         self
         """
-        check_X_y(X, y, allow_nd=True)
+        check_X_y(X, y, allow_nd=True, dtype=None)
         self.net = self.make_architecture(X, y)
         optimizer = optim.Adam(self.net.parameters(), lr=self.alpha, betas=(self.beta1, self.beta2))
 

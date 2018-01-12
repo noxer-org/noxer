@@ -65,7 +65,7 @@ class discriminator(nn.Module):
         self.input_height = height
         self.input_width = width
         self.input_dim = channels
-        self.output_dim = channels
+        self.output_dim = 1
         self.class_num = 10
 
         self.conv = nn.Sequential(
