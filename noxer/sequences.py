@@ -1,5 +1,6 @@
 """
-Contains a set of useful procedures and classes for sequence processing.
+Sequence preprocessing functionality. Extends sklearn
+transformers to sequences.
 """
 
 import numpy as np

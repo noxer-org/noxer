@@ -1,3 +1,7 @@
+"""
+Learning with networks that can process sequential data.
+"""
+
 from sklearn.base import ClassifierMixin, RegressorMixin, BaseEstimator, TransformerMixin
 from sklearn.preprocessing import LabelEncoder, FunctionTransformer
 from sklearn.metrics import accuracy_score
@@ -146,9 +150,6 @@ class KerasNNBase(BaseEstimator):
     def predict(self, X):
         return self.encoder.inverse_transform(self._predict(X))
 
-def bad_activation(x):
-    return x - 3.0
-
 class KerasClassifierBase(KerasNNBase, ClassifierMixin):
     @abstractmethod
     def create_architecture(self, X, n_classes):
@@ -174,7 +175,7 @@ class KerasClassifierBase(KerasNNBase, ClassifierMixin):
             x = ip
             x = Flatten()(x)
             x = Dense(n_classes, activation='tanh')(x)
-            x = Activation(bad_activation)(x)
+            x = Activation('sigmoid')(x)
             print('Infeasible!')
             print(ex)
             model = keras.models.Model(inputs=ip, outputs=x)

@@ -1,3 +1,8 @@
+"""
+Interfaces and general functionality for generative
+models, such as a score function.
+"""
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from noxer.sequences import FlattenShape
 from .metrics import distribution_similarity

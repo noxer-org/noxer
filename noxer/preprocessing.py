@@ -1,5 +1,6 @@
 """
-Feature preprocessing of data, such as expanding categorical features to numerical ones.
+Feature preprocessing of data, such as expanding
+categorical features to numerical ones.
 """
 
 from sklearn.base import ClassifierMixin, BaseEstimator, TransformerMixin

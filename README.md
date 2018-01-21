@@ -24,14 +24,6 @@ or `Pipeline` classes. One could possibly go far beyond memory size with `dask`.
 directly with GridSearchCV from `scikit-learn` or better yet with BayesSearchCV 
 from `scikit-optimize` that is more efficient in number of model trainings. 
 
-We utilize a recent PyTorch deep learning framework. This leads to a few benefits also:
-* There is no compilation time of a neural network - nice feature for impatient developers
-* Debugging can be done similar to debugging of any other Python code
-* Serialization and deserialization is as easy as `torch.save(...)` and
- `torch.load(...)`, which is an extension of pickle (and hence works with any
- objects).
-
-
 ## Installation
 
 Install using pip in terminal:
@@ -44,16 +36,19 @@ cd noxer
 sudo pip install -e .
 ```
 
+## Documentation
+
+Documentation for the code is extracted from docstrings and is 
+located at [https://noxer-org.github.io/](https://noxer-org.github.io/).
+
 ## Examples
 
 See example usage in `examples` folder. 
 
-## Warning
-
-This package is actively developed, but is still in beta. Do expect the unexpected!
+## Acknowledgements
 
 Icon made by Freepik from www.flaticon.com .
 
-## For most part this software is ...
+## This software is under construction.
 
 ![under construction.](https://iaroslav-ai.github.io/images/under_construction.svg)
