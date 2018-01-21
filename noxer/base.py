@@ -1,3 +1,7 @@
+"""
+A set of abstract classes defining interfaces.
+"""
+
 class AugmentMixin(object):
     """Mixin class for augmentation of data in noxer."""
 

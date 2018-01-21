@@ -1,3 +1,8 @@
+"""
+This script contains a number of interfaces and
+implementations for Supervised learning with PyTorch.
+"""
+
 import math
 from abc import abstractmethod
 

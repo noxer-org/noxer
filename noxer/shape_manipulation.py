@@ -1,6 +1,7 @@
 """
-Various reusable manipulations on shapes.
-
+Functionality useful for experiments with novel
+learning algorithms for neural networks, such as
+novel optimization algorithms.
 """
 
 import numpy as np

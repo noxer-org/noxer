@@ -1,3 +1,8 @@
+"""
+Implementation of ACGAN, based on
+https://github.com/znxlwm/pytorch-generative-model-collections.
+"""
+
 from sklearn.preprocessing import LabelBinarizer
 
 import torch, time, os, pickle
@@ -7,7 +12,6 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision import datasets, transforms
-
 
 def initialize_weights(net):
     for m in net.modules():
